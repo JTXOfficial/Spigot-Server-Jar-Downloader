@@ -24,7 +24,7 @@ function download_jar {
 	name="BuildTools"
 	jar="BuildTools.jar"
 	
-	if [[ "$vr" == "1.18" ]] || [[ "$vr" == "1.18.1" ]] || [[ "$vr" == "1.18.2" ]] ; then
+	if [[ "$vr" == "1.18" ]] || [[ "$vr" == "1.18.1" ]] || [[ "$vr" == "1.18.2" ]] || [[ "$vr" == "1.19" ]] ; then
 		if java -version 2>&1 >/dev/null | grep 'java version "17\|openjdk version "17' ; then
 			echo "Java 17 was detected, continuing..."
 		else
