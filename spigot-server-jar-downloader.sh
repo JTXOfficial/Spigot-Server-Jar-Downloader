@@ -98,9 +98,10 @@ function download_jar {
 
 
 while true; do
-	read -p "Which spigot version would you like from 1.8 - 1.18.2?: " vr
+	read -p "Which spigot version would you like from 1.8 - 1.19?: " vr
 		
 	case $vr in
+		'1.19'* ) download_jar;;
 		'1.18.2'* ) download_jar;;
 		'1.18.1'* ) download_jar;;
 		'1.18'* ) download_jar;;
@@ -138,6 +139,7 @@ while true; do
 		
 		* ) echo "Invalid version try again. 
 Current Versions:
+1.19
 1.18.2
 1.18.1
 1.18
