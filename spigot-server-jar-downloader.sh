@@ -2,179 +2,177 @@
 
 ##############################################################################
 # Spigot Server Jar Downloader by https://github.com/JTXOfficial
+# Updated and optimized version
 #
-# Tested on Ubuntu 20.04.4
+# Tested on Ubuntu 20.04.4 and higher
 # This script is not affiliated or in any way endorsed by SpigotMC.
 #
-# Credit: oliver193
+# Credit: oliver193, with updates by Claude
 ##############################################################################
 
 echo "##############################################################################
-# Spigot Server Jar Downloader by https://github.com/JTXOfficial
+# Spigot Server Jar Downloader
 #
-# Tested on Ubuntu 20.04.4
 # This script is not affiliated or in any way endorsed by SpigotMC.
-#
-# Credit: oliver193
 ##############################################################################"
 
+# Define version ranges and their required Java version
+declare -A java_requirements=(
+    ["1.8-1.16.5"]=8
+    ["1.17-1.17.1"]=16
+    ["1.18-1.20.5"]=17
+    ["1.21-latest"]=21
+)
 
-function download_jar {
-	api="https://hub.spigotmc.org/jenkins/job"
-	name="BuildTools"
-	jar="BuildTools.jar"
-	
-	if [[ "$vr" == "1.18" ]] || [[ "$vr" == "1.18.1" ]] || [[ "$vr" == "1.18.2" ]] || [[ "$vr" == "1.19" ]] ; then
-		if java -version 2>&1 >/dev/null | grep 'java version "17\|openjdk version "17' ; then
-			echo "Java 17 was detected, continuing..."
-		else
-			echo "Java 17 isn't installed. Not having it installed won't allow it to download" $vr
-			while true; do
-			read -p "Would you like to download Java 17? Y|N: " yn
-			
-			case $yn in
-				[yY] ) echo "Starting download...";
-					    sudo apt install -y curl openjdk-17-jdk
-						break;;
-				[nN] ) echo "exiting...";
-						exit;;
-				* ) echo "Invalid response";
-			esac
-			done
-		fi		
-	fi
-	
-	if [[ "$vr" == "1.17" ]] || [[ "$vr" == "1.17.1" ]] ; then
-		if java -version 2>&1 >/dev/null | grep 'java version "16\|openjdk version "16' ; then
-			echo "Java 16 was detected, continuing..."
-		else
-			echo "Java 16 isn't installed. Not having it installed won't allow it to download" $vr
-			while true; do
-			read -p "Would you like to download Java 16? Y|N: " yn
-			
-			case $yn in
-				[yY] ) echo "Starting download...";
-					    sudo apt install -y curl openjdk-16-jdk
-						break;;
-				[nN] ) echo "exiting...";
-						exit;;
-				* ) echo "Invalid response";
-			esac
-			done
-		fi		
-	fi
-	if [[ "$vr" == "1.16.5" ]] || [[ "$vr" == "1.16.4" ]] || [[ "$vr" == "1.16.3" ]] || [[ "$vr" == "1.16.2" ]] || [[ "$vr" == "1.16.1" ]] || [[ "$vr" == "1.15.2" ]] || [[ "$vr" == "1.15.1" ]] || [[ "$vr" == "1.15" ]] || [[ "$vr" == "1.14.4" ]] || [[ "$vr" == "1.14.3" ]] || [[ "$vr" == "1.14.2" ]] || [[ "$vr" == "1.14.1" ]]	|| [[ "$vr" == "1.14" ]] || [[ "$vr" == "1.13.2" ]] || [[ "$vr" == "1.13.1" ]] || [[ "$vr" == "1.13" ]] || [[ "$vr" == "1.12.2" ]] || [[ "$vr" == "1.12.1" ]] || [[ "$vr" == "1.12" ]] || [[ "$vr" == "1.11.2" ]] || [[ "$vr" == "1.11.1" ]] || [[ "$vr" == "1.11" ]] || [[ "$vr" == "1.10.2" ]] || [[ "$vr" == "1.9.4" ]] || [[ "$vr" == "1.9.2" ]] || [[ "$vr" == "1.9" ]] || [[ "$vr" == "1.8.8" ]] || [[ "$vr" == "1.8.3" ]] || [[ "$vr" == "1.8" ]]; then
-		if java -version 2>&1 >/dev/null | grep 'java version "8\|openjdk version "8' ; then
-			echo "Java 8 was detected, continuing..."
-		else
-			echo "Java 8 isn't installed. Not having it installed won't allow it to download" $vr
-			while true; do
-			read -p "Would you like to download Java 8? Y|N: " yn
-			
-			case $yn in
-				[yY] ) echo "Starting download...";
-					    sudo apt install -y curl openjdk-8-jdk
-						break;;
-				[nN] ) echo "exiting...";
-						exit;;
-				* ) echo "Invalid response";
-			esac
-			done
-		fi		
-	fi
-	
-	mkdir $vr
-	cd $vr
+# Supported versions array (newest first)
+versions=(
+    "1.21.1" "1.21"
+    "1.20.6" "1.20.5" "1.20.4" "1.20.3" "1.20.2" "1.20.1" "1.20"
+    "1.19.4" "1.19.3" "1.19.2" "1.19.1" "1.19"
+    "1.18.2" "1.18.1" "1.18"
+    "1.17.1" "1.17"
+    "1.16.5" "1.16.4" "1.16.3" "1.16.2" "1.16.1" "1.16"
+    "1.15.2" "1.15.1" "1.15"
+    "1.14.4" "1.14.3" "1.14.2" "1.14.1" "1.14"
+    "1.13.2" "1.13.1" "1.13"
+    "1.12.2" "1.12.1" "1.12"
+    "1.11.2" "1.11.1" "1.11"
+    "1.10.2" "1.10"
+    "1.9.4" "1.9.2" "1.9"
+    "1.8.8" "1.8.3" "1.8"
+)
 
-	download_url="$api"/"$name"/lastSuccessfulBuild/artifact/target/"$jar"
-
-	curl "$download_url" > $jar
-	
-	java -jar BuildTools.jar --rev $vr
-	
-	echo "Download has been completed. The jar is located in:"
-	readlink -f BuildTools.jar
+function check_java_version() {
+    local required_version=$1
+    
+    if java -version 2>&1 | grep -q "version \"$required_version\|openjdk version \"$required_version"; then
+        return 0
+    else
+        return 1
+    fi
 }
 
+function install_java() {
+    local version=$1
+    
+    echo "Java $version isn't installed. Required for Minecraft version $vr"
+    read -p "Would you like to download Java $version? [Y/n]: " yn
+    
+    case ${yn:-y} in
+        [yY]* ) 
+            echo "Starting download..."
+            sudo apt update
+            sudo apt install -y curl openjdk-$version-jdk
+            return 0;;
+        * ) 
+            echo "Exiting..."
+            return 1;;
+    esac
+}
+
+function get_required_java() {
+    local mc_version=$1
+    
+    for range in "${!java_requirements[@]}"; do
+        IFS=- read min max <<< "$range"
+        
+        # Handle "latest" as a special case
+        if [[ "$max" == "latest" ]]; then
+            if [[ "$(echo -e "$mc_version\n$min" | sort -V | tail -n1)" == "$mc_version" ]]; then
+                echo "${java_requirements[$range]}"
+                return
+            fi
+        else
+            if [[ "$(echo -e "$mc_version\n$min" | sort -V | tail -n1)" == "$mc_version" && 
+                  "$(echo -e "$mc_version\n$max" | sort -V | head -n1)" == "$mc_version" ]]; then
+                echo "${java_requirements[$range]}"
+                return
+            fi
+        fi
+    done
+    
+    # Default to Java 17 if no match found
+    echo "17"
+}
+
+function download_jar() {
+    local java_version=$(get_required_java "$vr")
+    
+    # Check if required Java is installed
+    if ! check_java_version "$java_version"; then
+        if ! install_java "$java_version"; then
+            return 1
+        fi
+    else
+        echo "Java $java_version was detected, continuing..."
+    fi
+    
+    # Create directory and download BuildTools
+    mkdir -p "$vr"
+    cd "$vr"
+    
+    local api="https://hub.spigotmc.org/jenkins/job"
+    local name="BuildTools"
+    local jar="BuildTools.jar"
+    local download_url="$api/$name/lastSuccessfulBuild/artifact/target/$jar"
+    
+    echo "Downloading BuildTools.jar..."
+    curl -s "$download_url" > "$jar"
+    
+    echo "Building Spigot $vr (this may take a while)..."
+    java -jar BuildTools.jar --rev "$vr"
+    
+    echo "Download and build complete! The server jar is located at:"
+    find "$(pwd)" -name "spigot-$vr*.jar" | head -n1
+    
+    # Return to original directory
+    cd ..
+}
+
+# Display available versions in a grid format
+function display_versions() {
+    echo "Available Minecraft versions:"
+    echo "--------------------------"
+    
+    local cols=5
+    local count=0
+    
+    for v in "${versions[@]}"; do
+        printf "%-10s" "$v"
+        ((count++))
+        
+        if ((count % cols == 0)); then
+            echo ""
+        fi
+    done
+    
+    # Print final newline if needed
+    if ((count % cols != 0)); then
+        echo ""
+    fi
+    
+    echo "--------------------------"
+}
+
+# Main execution
+display_versions
 
 while true; do
-	read -p "Which spigot version would you like from 1.8 - 1.19?: " vr
-		
-	case $vr in
-		'1.19'* ) download_jar;;
-		'1.18.2'* ) download_jar;;
-		'1.18.1'* ) download_jar;;
-		'1.18'* ) download_jar;;
-		'1.17.1'* ) download_jar;;
-		'1.17'* ) download_jar;;
-		'1.16.5'* ) download_jar;;
-		'1.16.4'* ) download_jar;;
-		'1.16.3'* ) download_jar;;
-		'1.16.2'* ) download_jar;;
-		'1.16.1'* ) download_jar;;
-		'1.15.2'* ) download_jar;;
-		'1.15.1'* ) download_jar;;
-		'1.15'* ) download_jar;;
-		'1.14.4'* ) download_jar;;
-		'1.14.3'* ) download_jar;;
-		'1.14.2'* ) download_jar;;
-		'1.14.1'* )download_jar;;
-		'1.14'* ) download_jar;;
-		'1.13.2'* ) download_jar;;
-		'1.13.1'* ) download_jar;;
-		'1.13'* ) download_jar;;
-		'1.12.2'* ) download_jar;;
-		'1.12.1'* ) download_jar;;
-		'1.12'* ) download_jar;;
-		'1.11.2'* ) download_jar;;
-		'1.11.1'* ) download_jar;;
-		'1.11'* ) download_jar;;
-		'1.10.2'* ) download_jar;;
-		'1.9.4'* ) download_jar;;
-		'1.9.2'* ) download_jar;;
-		'1.9'* ) download_jar;;
-		'1.8.8'* ) download_jar;;
-		'1.8.3'* ) download_jar;;
-		'1.8'* ) download_jar;;
-		
-		* ) echo "Invalid version try again. 
-Current Versions:
-1.19
-1.18.2
-1.18.1
-1.18
-1.17.1
-1.17
-1.16.5
-1.16.4
-1.16.3
-1.16.2
-1.16.1
-1.15.2
-1.15.1
-1.15
-1.14.4
-1.14.3
-1.14.2
-1.14.1
-1.14
-1.13.2
-1.13.1
-1.13
-1.12.2
-1.12.1
-1.12
-1.11.2
-1.11.1
-1.11
-1.10.2
-1.9.4
-1.9.2
-1.9
-1.8.8
-1.8.3
-1.8";;
-	esac
+    read -p "Which Spigot version would you like to download? " vr
+    
+    # Check if version is supported
+    if [[ " ${versions[*]} " == *" $vr "* ]]; then
+        download_jar
+        break
+    else
+        echo "Invalid or unsupported version: $vr"
+        read -p "Display available versions? [Y/n]: " show_versions
+        
+        case ${show_versions:-y} in
+            [yY]* ) display_versions;;
+            * ) ;;
+        esac
+    fi
 done
 
-
+echo "Thank you for using the Spigot Server Jar Downloader!"
